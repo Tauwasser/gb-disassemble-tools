@@ -127,8 +127,6 @@ class OpcodeCB_XYZ(OpcodeXYZ):
 	def getCBOpcode(self):
 		return int(self._bytes[1])
 
-import itertools
-
 z80gb_opcodes = [
 	# X0 Z0
 	[OpcodeXYZ(0, 0, 0, 'nop')],
@@ -167,10 +165,10 @@ z80gb_opcodes = [
 	[OpcodeXYZ(0, 6, 7, 'scf')],
 	[OpcodeXYZ(0, 7, 7, 'ccf')],
 	# X1
-	[OpcodeXYZ(1, y, z, 'ld ' + tbl_r[y][0] + ', ' + tbl_r[z][0]) for y, z in itertools.product(range(0,8), range(0,8)) if not(y == 6 and z == 6)],
+	[OpcodeXYZ(1, y, z, 'ld ' + tbl_r[y][0] + ', ' + tbl_r[z][0]) for y in range(0,8) for z in range(0,8) if not(y == 6 and z == 6)],
 	[OpcodeXYZ(1, 6, 6, 'halt')],
 	# X2
-	[OpcodeXYZ(2, y, z, tbl_alu[y] + ' a, ' + tbl_r[z][0]) for y, z in itertools.product(range(0,8), range(0,8))],
+	[OpcodeXYZ(2, y, z, tbl_alu[y] + ' a, ' + tbl_r[z][0]) for y in range(0,8) for z in range(0,8)],
 	# X3 Z0
 	[OpcodeXYZ(3, y, 0, 'ret ' + tbl_cc[y][0]) for y in range(0,4)],
 	[OpcodeXYZ(3, 4, 0, 'ld [$FF00 + u8], a')],
@@ -192,10 +190,10 @@ z80gb_opcodes = [
 	# X3 Z3 Y0
 	[OpcodeXYZ(3, 0, 3, 'jp u16')],
 	# X3 Z3 Y1 CB-prefix
-	[OpcodeCB_XYZ(0, y, z, tbl_rot[y] + ' ' + tbl_r[z][0]) for y, z in itertools.product(range(0,8), range(0,8))],
-	[OpcodeCB_XYZ(1, y, z, 'bit {0:d}, '.format(y) + tbl_r[z][0]) for y, z in itertools.product(range(0,8), range(0,8))],
-	[OpcodeCB_XYZ(2, y, z, 'res {0:d}, '.format(y) + tbl_r[z][0]) for y, z in itertools.product(range(0,8), range(0,8))],
-	[OpcodeCB_XYZ(3, y, z, 'set {0:d}, '.format(y) + tbl_r[z][0]) for y, z in itertools.product(range(0,8), range(0,8))],
+	[OpcodeCB_XYZ(0, y, z, tbl_rot[y] + ' ' + tbl_r[z][0]) for y in range(0,8) for z in range(0,8)],
+	[OpcodeCB_XYZ(1, y, z, 'bit {0:d}, '.format(y) + tbl_r[z][0]) for y in range(0,8) for z in range(0,8)],
+	[OpcodeCB_XYZ(2, y, z, 'res {0:d}, '.format(y) + tbl_r[z][0]) for y in range(0,8) for z in range(0,8)],
+	[OpcodeCB_XYZ(3, y, z, 'set {0:d}, '.format(y) + tbl_r[z][0]) for y in range(0,8) for z in range(0,8)],
 	# X3 Z3 Y2..5 N/A
 	# X3 Z3 Y6..7
 	[OpcodeXYZ(3, 6, 3, 'di')],
@@ -216,7 +214,7 @@ z80gb_opcodes = [
 z80_opcode_dict = {}
 z80_CBOpcode_dict = {}
 
-z80gb_opcodes_flat = list(itertools.chain.from_iterable(z80gb_opcodes))
+z80gb_opcodes_flat = [op for sublist in z80gb_opcodes for op in sublist]
 
 for op in z80gb_opcodes_flat:
 	if op.getOpcode() != 0xCB:
