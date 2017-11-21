@@ -35,21 +35,24 @@ class ConditionCode:
         return self._name
     
 class Opcode:
-	def __init__(self, operation):
-		self._operation = operation
-	
-	def __repr__(self):
-		return str(self)
-	
-	def getOperation(self):
-		if self._operation:
-			return self._operation
-	
-	def getBytes(self):
-		return self._bytes
-	
-	def getOpcode(self):
-		return int(self._bytes[0])
+    def __init__(self):
+        self._bytes = bytes()
+        self._layout = {'length': 0, 'vals': {}}
+    
+    def __repr__(self):
+        return str(self)
+        
+    def __str__(self):
+        return ' '.join(['0x{0:02X}'.format(b) for b in self._bytes])
+    
+    def getBytes(self):
+        return self._bytes
+    
+    def getLayout(self):
+        return self._layout
+    
+    def getOpcode(self):
+        return int(self._bytes[0])
 
 class OpArgType(Enum):
     reg = (0, '{!s}',    0)
@@ -97,4 +100,38 @@ class Operation:
     def __str__(self):
         args = [printOpArgType(t, v) for (t, v) in self._args]
         return self._label.format(*args)
-            
+
+class Instruction:
+    def __init__(self, opcode, asmstr, layout = None, ins = [], outs = [], ir = []):
+        self._opcode = opcode
+        self._asmstr = asmstr
+        self._ins = ins
+        self._outs = outs
+        self._ir = ir
+        self._vals = {}
+        
+        # extract named values from opcode
+        self.addVals(opcode.getBytes(), opcode.getLayout())
+    
+    def __repr__(self):
+        return str(self)
+        
+    def __str__(self):
+        return self._asmstr
+    
+    def addVals(self, b, layout):
+        
+        num = int.from_bytes(b, byteorder='big')
+        for k, v in layout['vals'].items():
+            (s, e) = v
+            n = num >> s
+            n &= (2**e - 1)
+            self._vals[k] = n
+        
+    def getVals(self):
+        return self._vals
+    
+    def getOpcode(self):
+        return self._opcode
+    
+    
